@@ -112,7 +112,7 @@ def read_data(file_name,overide = False):
                 string_content = each[1]
                 labels = np.zeros((8,))
                 labels[target_scene[each[2]]]=1
-                raw_data.append((string_content,labels))
+                raw_data.append((each[0],string_content,labels))
         read_data_finish_time = time.time()
         spend_time = float((read_data_finish_time - read_data_start_time)/60)
         print("======== total spend for process raw_data:",spend_time,'minutes ========\n')
@@ -195,16 +195,16 @@ def contextualize(raw_data,vocab_str=None, vocab_vec=None, Gmean=None, Gvar=None
     '''
     contextualize_start_time = time.time()
     if overide:
-        data = pickle.load(open("DATA/final_data_clean0525.p", "rb"))
+        data = pickle.load(open("DATA/final_data_clustered.p", "rb"))
         print('finish load final_data from pickle!')
         return data
     else:
         final_data = []
         i=0
         for each in raw_data:
-            string_content, labels = each
+            id,string_content, labels = each
             sent_str_list, sent_idx_list = sentence2sequence(string_content,vocab_str, vocab_vec, Gmean, Gvar)
-            final_data.append((labels,sent_str_list,sent_idx_list))
+            final_data.append((id,labels,sent_str_list,sent_idx_list))
             if i%500 ==0:
                 print(i,len(sent_str_list),len(sent_idx_list[0]),'process sms message in sentence2sequence!')
             i+=1
@@ -231,11 +231,24 @@ def split_data(final_data,train_size = 0, overide = False):
     '''
 
     if overide:
-        train_data = pickle.load(open("DATA/train_data.p", "rb"))
-        cv_data = pickle.load(open("DATA/cv_data.p", "rb"))
-        test_data = pickle.load(open("DATA/test_data.p", "rb"))
-        print('finish load split data from pickle!')
-        return train_data, cv_data, test_data
+        if overide =='train':
+            #  final data would be cluastered data,and what in pickle would be clean data.
+            train_data=[]
+            train_data_all = pickle.load(open("DATA/train_data_cp.p", "rb"))
+            clustered_id = zip(*final_data)[0]
+            for each in train_data_all:
+                if each[0]in clustered_id:
+                    train_data.append(each)
+            cv_data = pickle.load(open("DATA/cv_data_cp.p", "rb"))
+            test_data = pickle.load(open("DATA/test_data_cp.p", "rb"))
+            print('train mode -- finish load split data from pickle!')
+            return train_data, cv_data, test_data
+        else:
+            train_data = pickle.load(open("DATA/train_data.p", "rb"))
+            cv_data = pickle.load(open("DATA/cv_data.p", "rb"))
+            test_data = pickle.load(open("DATA/test_data.p", "rb"))
+            print('finish load split data from pickle!')
+            return train_data, cv_data, test_data
     else:
         train_dev, test_data = train_test_split(final_data, test_size=0.2,random_state=42)
         train_data , cv_data = train_test_split(train_dev, test_size=0.25,random_state=42)

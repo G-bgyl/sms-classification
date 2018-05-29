@@ -27,7 +27,7 @@ def datasize_vs_loss(overide=False):
             train_size = train_size / unit
             print('train_size:',1-train_size)
             # train_size in split data means the part that need to throw away
-            train_data, cv_data, _ = split_data(final_data, train_size=train_size, overide=False)
+            train_data, cv_data, _ = split_data(final_data, train_size=train_size, overide='train')
             train_loss_, cv_loss_ = train(train_data,cv_data)
             tt_acu.append([1-train_size, train_loss_, cv_loss_])
 
@@ -167,6 +167,8 @@ if __name__ == '__main__':
 
 
     # plot L2 regulariziation term _vs_loss
-    train_data, cv_data, _ = split_data(final_data, 0)
+    # when voeride = 'train', the cv_data and test data will still be the same as clean data,
+    # but the train data would only be part of train data that also appears in clustered data.
+    train_data, cv_data, _ = split_data(final_data, 0,overide='train')
     tt_acu = l2_vs_loss()
     plot(tt_acu,"L2 regularization term","PLOT/l2_loss_stats_clustered.png")
