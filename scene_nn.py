@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import jieba
 import csv
 import re
 from sklearn.model_selection import train_test_split
@@ -8,6 +9,7 @@ import tensorflow as tf
 import datetime
 import time
 import usrCut
+
 
 # distinguish sms type
 target_scene={'S0001':0,'S0002':1,'S0003':2,'S0004':3,'S0005':4,'S0006':5,'S0007':6,'S0008':7}
@@ -63,6 +65,7 @@ def loadZhW2v(zh_word_vec_file=None,overide = False):
 
             loadw2v_finish_time = time.time()
             spend_time = float((loadw2v_start_time - loadw2v_finish_time)/60)
+
             print("======== total spend for create vocab_str & vocab_vec:",spend_time,'minutes ========\n')
 
             return vocab_str, vocab_vec
@@ -72,11 +75,14 @@ def loadZhW2v(zh_word_vec_file=None,overide = False):
 # Dealing with Unknown words in zh_w2v
 # -------------
 
+
 def generate_new(unk,vocab_str, vocab_vec, Gmean, Gvar):
+
     """
       Input: unknown word
       Output: generate a random word embedding from multi-nomial distribution and add to glove_wordmap
     """
+
     # global vocab_str,vocab_vec, Gmean, Gvar
 
     RS = np.random.RandomState()
@@ -99,14 +105,18 @@ def read_data(file_name,overide = False):
     # the label of content whether it belongs to target_scene or not.
 
     if overide:
-        raw_data = pickle.load(open("DATA/raw_data_clustered.p", "rb"))
+
+        raw_data = pickle.load(open("DATA/raw_data_clean0525.p", "rb"))
+
         print('finish load raw_data from pickle!')
         return raw_data
     else:
         read_data_start_time = time.time()
         raw_data = []
         with open(file_name) as sms_messages:
+
             reader = csv.reader(sms_messages,delimiter='\t')
+
             next(reader)
             for each in reader:
                 string_content = each[1]
@@ -115,8 +125,10 @@ def read_data(file_name,overide = False):
                 raw_data.append((string_content,labels))
         read_data_finish_time = time.time()
         spend_time = float((read_data_finish_time - read_data_start_time)/60)
+
         print("======== total spend for process raw_data:",spend_time,'minutes ========\n')
         pickle.dump(raw_data, open("DATA/raw_data_clustered.p", "wb+"))
+
         return raw_data
 
 
@@ -131,10 +143,10 @@ def cleanSentences(sentence):
 
 
 
-
 # ----------------------------------
 # turn sentence into list of index
 # ----------------------------------
+
 def sentence2sequence(sentence,vocab_str, vocab_vec, Gmean, Gvar):
     """
         - Turns an input paragraph into an (m,d) matrix,
@@ -204,19 +216,19 @@ def contextualize(raw_data,vocab_str=None, vocab_vec=None, Gmean=None, Gvar=None
         for each in raw_data:
             string_content, labels = each
             sent_str_list, sent_idx_list = sentence2sequence(string_content,vocab_str, vocab_vec, Gmean, Gvar)
+
             final_data.append((labels,sent_str_list,sent_idx_list))
             if i%500 ==0:
                 print(i,len(sent_str_list),len(sent_idx_list[0]),'process sms message in sentence2sequence!')
             i+=1
         pickle.dump(final_data, open("DATA/final_data_clustered.p", "wb+"))
 
-
-
         contextualize_finish_time = time.time()
         spend_time = float((contextualize_finish_time - contextualize_start_time)/60)
         print("======== total spend for contextualize final data:",spend_time,'minutes ========\n')
 
         return np.asarray(final_data)
+
 
 
 # ----------------------------------------
@@ -248,8 +260,6 @@ def split_data(final_data,train_size = 0, overide = False):
 
 
 
-
-
 # ----------------
 #  Prepare batch
 # ----------------
@@ -272,9 +282,11 @@ numDimensions = 300
 # ----------------------------------------------------------------
 #  Specifically calculate stats for one type of sms_messages
 # ----------------------------------------------------------------
+
 def print_stats(nextBatchLabels,accuracy_num, correctPred_list, prediction_list,scene_code = 'S0002'):
     # calculate f1 score
     tp,fp,fn,tn=0,0,0,0
+
 
     # for scene_code in target_scene:
     # type_to_eval=1 when test S0002
@@ -414,6 +426,7 @@ def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,overide = False):
     writer.close()
 
 
+
     '''
     Test accuracy
     '''
@@ -424,6 +437,7 @@ def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,overide = False):
                                           feed_dict=feed_dict)
     print('\nCalculate cross validation data accuracy!')
     # these 4 stats are for 'S0002' by default
+
     cv_precision,cv_recall,cv_accuracy_,cv_f1_score = print_stats(nextBatchLabels,accuracy_num, correctPred_list, prediction_list)
 
 
@@ -460,6 +474,7 @@ if __name__=='__main__':
     zh_word_vec_file = 'zh_w2v.tsv'
 
 
+
     # # TODO: need to rerun to update the type of elements from list into ndarray
     # vocab_str, vocab_vec = loadZhW2v(None, True)
     # s = np.vstack(vocab_vec)
@@ -473,3 +488,4 @@ if __name__=='__main__':
     train_data, cv_data, test_data = split_data(final_data,0)
 
     train(None, None, overide = True)
+
