@@ -1,0 +1,28 @@
+/DATA
+/models
+/tensorboard
+/词典
+/PLOT
+*.txt
+*.csv
+.gitignore.swp
+.ipynb_checkpoints/
+__pycache__/
+gitignore-bak
+Report of Neural Network.ipynb
+debug_raw_data.py
+experiment_plot.py
+mysql introduction.ipynb
+plot_stats_nn.py
+projFunction.py
+scene_logistic.py
+scene_nn.pyc
+script_delete_same_sms.py
+temp_debug_raw_data
+test_cat.ipynb
+try_update.py
+usrCut.py
+vis_sms_len.ipynb
+zh_w2v.tsv
+"\345\234\272\346\231\257.xlsx"
+
