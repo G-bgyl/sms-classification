@@ -76,7 +76,7 @@ def l2_vs_loss(overide=False):
     : input
     '''
     unit = 3
-    split = 90
+    split = 40
     if overide:
         tt_acu = pickle.load(open("DATA/l2_loss_stats_clustered.p", "rb"))
         print('finish load l2_plot_stats data from pickle!')
