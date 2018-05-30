@@ -384,13 +384,18 @@ def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,l1=False,overide = Fal
     merged = tf.summary.merge_all()
     logdir = "tensorboard/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + "/"
     writer = tf.summary.FileWriter(logdir, sess.graph)
-    convertion = 0
+
+    convergence = 0
+    max_acc= 0.5
+
     '''
     # begin training
     '''
     for i in range(iterations):
 
-        if convertion > 90:
+
+        if convergence > 100:
+
             print('\nIteration %s Successfully converge!'%(i))
             break
         batch = np.random.randint(len(train_data), size=batchSize)
@@ -426,8 +431,11 @@ def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,l1=False,overide = Fal
     #         print("saved to %s" % save_path)
 
         # help made judgment of converging.
-        if 100 - train_accu < 0.3:
-            convertion+=1
+
+        if 0< (train_accu-max_acc)/max_acc<0.00005:
+            convergence += 1
+            max_acc=train_accu
+
 
     '''
     # calculate train data accuracy
