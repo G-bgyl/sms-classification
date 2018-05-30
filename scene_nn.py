@@ -239,6 +239,8 @@ def split_data(final_data,train_size = 0, overide = False):
             for each in train_data_all:
                 if each[0] in clustered_id:
                     train_data.append(each)
+            train_data, _ = train_test_split(train_data, test_size=train_size, random_state=42)
+            print('train mode -- len of train data:',len(train_data))
             cv_data = pickle.load(open("DATA/cv_data_cp.p", "rb"))
             test_data = pickle.load(open("DATA/test_data_cp.p", "rb"))
             print('train mode -- finish load split data from pickle!')
@@ -430,6 +432,7 @@ def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,l1=False,overide = Fal
     '''
     # calculate train data accuracy
     '''
+    # because of split data in train mode, train data is processed with id,but cv_data(below) is not.
 
     id, nextBatchLabels, _, nextBatchVec = zip(*train_data)
     feed_dict = {batch_vec_data: nextBatchVec, labels: nextBatchLabels}
@@ -445,8 +448,9 @@ def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,l1=False,overide = Fal
     '''
     Test accuracy
     '''
+    # because of split data in train mode, train data(up there) is with id,but cv_data is not.
     # zip(*batch_data) returns labels, sent_str_list, sent_idx_list
-    id, nextBatchLabels, nextBatchStr, nextBatchVec = zip(*cv_data)
+    nextBatchLabels, nextBatchStr, nextBatchVec = zip(*cv_data)
     feed_dict =  {batch_vec_data: nextBatchVec, labels: nextBatchLabels}
     accuracy_num, correctPred_list, prediction_list,loss_cv = sess.run([accuracy, correctPred,prediction,loss],
                                           feed_dict=feed_dict)

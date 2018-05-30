@@ -75,8 +75,8 @@ def l2_vs_loss(overide=False):
     '''
     : input
     '''
-    unit = 3
-    split = 40
+    unit = 20
+    split = 50
     if overide:
         tt_acu = pickle.load(open("DATA/l2_loss_stats_clustered.p", "rb"))
         print('finish load l2_plot_stats data from pickle!')
@@ -90,7 +90,8 @@ def l2_vs_loss(overide=False):
         for l2_term in range(1,split+1):
             print('epoch', l2_term)
 
-            l2_term = l2_term/unit
+            # l2_term = l2_term/unit
+            l2_term=np.log(l2_term)
             print('l2_term:',l2_term)
 
             train_loss_,cv_loss_ = train(train_data,cv_data, beta_l2 = l2_term)
@@ -109,8 +110,8 @@ def l1_vs_loss(overide=False):
     '''
     : input
     '''
-    unit = 40
-    split = 40
+    unit = 20
+    split = 50
     if overide:
         tt_acu = pickle.load(open("DATA/l2_loss_stats_clustered.p", "rb"))
         print('finish load l2_plot_stats data from pickle!')
@@ -124,7 +125,8 @@ def l1_vs_loss(overide=False):
         for l1_term in range(1,split+1):
             print('epoch', l1_term)
 
-            l1_term = l1_term/unit
+            # l1_term = l1_term/unit
+            l1_term=np.log(l1_term)
             print('l2_term:',l1_term)
 
             train_loss_,cv_loss_ = train(train_data,cv_data, beta_l2 = l1_term,l1=True)
@@ -200,9 +202,9 @@ if __name__ == '__main__':
     raw_data = read_data(None,name = "DATA/raw_data_clustered.p", overide=True)
 
     final_data = contextualize(None, name="DATA/final_data_clustered.p",overide = True)
-    # plot datasize_vs_loss
-    tt_acu = datasize_vs_loss()
-    plot(tt_acu,"size of dataset","PLOT/datasize_loss_stats_clustered.png")
+    # # plot datasize_vs_loss
+    # tt_acu = datasize_vs_loss()
+    # plot(tt_acu,"size of dataset","PLOT/datasize_loss_stats_clustered.png")
 
 
     # plot L2 regulariziation term _vs_loss
@@ -211,8 +213,8 @@ if __name__ == '__main__':
 
     # when the split mode is 'train', pick out data in old_train_data and clustered data at the same time.
     train_data, cv_data, _ = split_data(final_data, 0,overide='train')
-    # tt_acu = l2_vs_loss()
-    # plot(tt_acu,"L2 regularization term","PLOT/l2_loss_stats_clustered.png")
+    tt_acu = l2_vs_loss()
+    plot(tt_acu,"L2 regularization term","PLOT/l2_loss_stats_clustered.png")
 
 
     tt_acu = l1_vs_loss()
