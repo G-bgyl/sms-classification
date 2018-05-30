@@ -231,11 +231,13 @@ def split_data(final_data,train_size = 0, overide = False):
     '''
 
     if overide:
+
         train_data = pickle.load(open("DATA/train_data.p", "rb"))
         cv_data = pickle.load(open("DATA/cv_data.p", "rb"))
         test_data = pickle.load(open("DATA/test_data.p", "rb"))
         print('finish load split data from pickle!')
         return train_data, cv_data, test_data
+
     else:
         train_dev, test_data = train_test_split(final_data, test_size=0.2,random_state=42)
         train_data , cv_data = train_test_split(train_dev, test_size=0.25,random_state=42)
@@ -409,6 +411,7 @@ def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,overide = False):
     '''
     # calculate train data accuracy
     '''
+    # because of split data in train mode, train data is processed with id,but cv_data(below) is not.
 
     nextBatchLabels, _, nextBatchVec = zip(*train_data)
     feed_dict = {batch_vec_data: nextBatchVec, labels: nextBatchLabels}
@@ -424,6 +427,7 @@ def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,overide = False):
     '''
     Test accuracy
     '''
+    # because of split data in train mode, train data(up there) is with id,but cv_data is not.
     # zip(*batch_data) returns labels, sent_str_list, sent_idx_list
     nextBatchLabels, nextBatchStr, nextBatchVec = zip(*cv_data)
     feed_dict =  {batch_vec_data: nextBatchVec, labels: nextBatchLabels}

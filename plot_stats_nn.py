@@ -75,8 +75,9 @@ def l2_vs_loss(overide=False):
     '''
     : input
     '''
-    unit = 3
-    split = 90
+
+    unit = 20
+    split = 50
     if overide:
         tt_acu = pickle.load(open("DATA/l2_loss_stats_0526.p", "rb"))
         print('finish load l2_plot_stats data from pickle!')
@@ -90,7 +91,8 @@ def l2_vs_loss(overide=False):
         for l2_term in range(1,split+1):
             print('epoch', l2_term)
 
-            l2_term = l2_term/unit
+            # l2_term = l2_term/unit
+            l2_term=np.log(l2_term)
             print('l2_term:',l2_term)
 
             train_loss_,cv_loss_ = train(train_data,cv_data, beta_l2 = l2_term)
@@ -99,6 +101,41 @@ def l2_vs_loss(overide=False):
         print(tt_acu)
         pickle.dump(tt_acu, open("DATA/l2_loss_stats_0526.p", "wb+"))
         print('-success dump l2_plot_stats data-')
+        return tt_acu
+
+
+# ------------------------------
+# plot loss of different L2 regulariziation term
+# ------------------------------
+def l1_vs_loss(overide=False):
+    '''
+    : input
+    '''
+    unit = 20
+    split = 50
+    if overide:
+        tt_acu = pickle.load(open("DATA/l2_loss_stats_clustered.p", "rb"))
+        print('finish load l2_plot_stats data from pickle!')
+        return tt_acu
+    else:
+        # train & test accuracy
+        tt_acu = []
+        # final_data = contextualize(None, True)
+
+        print('Begin training for ls_vs_loss!')
+        for l1_term in range(1,split+1):
+            print('epoch', l1_term)
+
+            # l1_term = l1_term/unit
+            l1_term=np.log(l1_term)
+            print('l2_term:',l1_term)
+
+            train_loss_,cv_loss_ = train(train_data,cv_data, beta_l2 = l1_term,l1=True)
+            tt_acu.append([l1_term,train_loss_,cv_loss_])
+        print('result of cross validation:')
+        print(tt_acu)
+        pickle.dump(tt_acu, open("DATA/l1_loss_stats_clustered.p", "wb+"))
+        print('-success dump l1_plot_stats data-')
         return tt_acu
 
 # ------------------------------
@@ -158,6 +195,7 @@ if __name__ == '__main__':
     #
     # Gvar = np.var(s, 0)  # distributional parameter for Glove, for later generating random embedding for UNK
     # Gmean = np.mean(s, 0)
+
     # raw_data = read_data(data_file)
     #
     # final_data = contextualize(raw_data,vocab_str, vocab_vec, Gmean, Gvar)
@@ -170,3 +208,4 @@ if __name__ == '__main__':
     # train_data, cv_data, _ = split_data(final_data, 0)
     # tt_acu = l2_vs_loss()
     # plot(tt_acu,"L2 regularization term","PLOT/l2_loss_stats_clustered.png")
+
