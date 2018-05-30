@@ -126,7 +126,7 @@ def read_data(file_name,overide = False):
 # -----------------------
 def cleanSentences(sentence):
     s = re.sub("[\s+\.\!\/_,$%^*(+\"\']+|[+——！，。？、~@#￥%……&*（）：；《）【】《》“”()»〔〕-]+", "",
-               sentence.decode("utf8")) # .decode("utf8")
+               sentence) # .decode("utf8")
     return usrCut.date_string_split(s)
 
 
