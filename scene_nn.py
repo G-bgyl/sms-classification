@@ -91,7 +91,7 @@ def generate_new(unk,vocab_str, vocab_vec, Gmean, Gvar):
 # ---------------------------------------------------------------
 # read data set, return the string of content and its label
 # ---------------------------------------------------------------
-def read_data(file_name,overide = False):
+def read_data(file_name,name,overide = False):
     # input: csv file name string, 'sms_messages.csv', when overide, set as None
     # columns of input file: id,raw_content,scene_code
     # output:
@@ -99,7 +99,7 @@ def read_data(file_name,overide = False):
     # the label of content whether it belongs to target_scene or not.
 
     if overide:
-        raw_data = pickle.load(open("DATA/raw_data_clustered.p", "rb"))
+        raw_data = pickle.load(open(name, "rb"))
         print('finish load raw_data from pickle!')
         return raw_data
     else:
@@ -112,11 +112,11 @@ def read_data(file_name,overide = False):
                 string_content = each[1]
                 labels = np.zeros((8,))
                 labels[target_scene[each[2]]]=1
-                raw_data.append((each[0],string_content,labels))
+                raw_data.append((int(each[0]),string_content,labels))
         read_data_finish_time = time.time()
         spend_time = float((read_data_finish_time - read_data_start_time)/60)
         print("======== total spend for process raw_data:",spend_time,'minutes ========\n')
-        pickle.dump(raw_data, open("DATA/raw_data_clustered.p", "wb+"))
+        pickle.dump(raw_data, open(name, "wb+"))
         return raw_data
 
 
@@ -153,7 +153,7 @@ def sentence2sequence(sentence,vocab_str, vocab_vec, Gmean, Gvar):
             try:
                 sent_idx_list.append(vocab_vec[vocab_str.index(word)])
                 sent_str_list.append(word)
-            except ValueError:
+            except:
                 # Greedy search for word: if it did not find the whole word in zh_w2v, then truncate tail to find
                 i = len(word)
                 while len(word) > 0:
@@ -187,7 +187,7 @@ def sentence2sequence(sentence,vocab_str, vocab_vec, Gmean, Gvar):
 # -----------------------------
 # read in and prepare data
 # -----------------------------
-def contextualize(raw_data,vocab_str=None, vocab_vec=None, Gmean=None, Gvar=None, overide = False):
+def contextualize(raw_data,name,vocab_str=None, vocab_vec=None, Gmean=None, Gvar=None, overide = False):
     '''
     :param raw_data: output of read_data
     :param overide: use pickle or not
@@ -195,7 +195,7 @@ def contextualize(raw_data,vocab_str=None, vocab_vec=None, Gmean=None, Gvar=None
     '''
     contextualize_start_time = time.time()
     if overide:
-        data = pickle.load(open("DATA/final_data_clustered.p", "rb"))
+        data = pickle.load(open(name, "rb"))
         print('finish load final_data from pickle!')
         return data
     else:
@@ -204,11 +204,11 @@ def contextualize(raw_data,vocab_str=None, vocab_vec=None, Gmean=None, Gvar=None
         for each in raw_data:
             id,string_content, labels = each
             sent_str_list, sent_idx_list = sentence2sequence(string_content,vocab_str, vocab_vec, Gmean, Gvar)
-            final_data.append((id,labels,sent_str_list,sent_idx_list))
+            final_data.append((int(id), labels,sent_str_list,sent_idx_list))
             if i%500 ==0:
                 print(i,len(sent_str_list),len(sent_idx_list[0]),'process sms message in sentence2sequence!')
             i+=1
-        pickle.dump(final_data, open("DATA/final_data_clustered.p", "wb+"))
+        pickle.dump(final_data, open(name, "wb+"))
 
 
 
@@ -216,7 +216,7 @@ def contextualize(raw_data,vocab_str=None, vocab_vec=None, Gmean=None, Gvar=None
         spend_time = float((contextualize_finish_time - contextualize_start_time)/60)
         print("======== total spend for contextualize final data:",spend_time,'minutes ========\n')
 
-        return np.asarray(final_data)
+        return final_data
 
 
 # ----------------------------------------
@@ -234,10 +234,10 @@ def split_data(final_data,train_size = 0, overide = False):
         if overide =='train':
             #  final data would be cluastered data,and what in pickle would be clean data.
             train_data=[]
-            train_data_all = pickle.load(open("DATA/train_data_cp.p", "rb"))
-            clustered_id = zip(*final_data)[0]
+            train_data_all = pickle.load(open("DATA/train_data.p", "rb"))
+            clustered_id = list(zip(*final_data))[0]
             for each in train_data_all:
-                if each[0]in clustered_id:
+                if each[0] in clustered_id:
                     train_data.append(each)
             cv_data = pickle.load(open("DATA/cv_data_cp.p", "rb"))
             test_data = pickle.load(open("DATA/test_data_cp.p", "rb"))
@@ -323,7 +323,7 @@ def print_stats(nextBatchLabels,accuracy_num, correctPred_list, prediction_list,
 
 
 
-def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,overide = False):
+def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,l1=False,overide = False):
     train_start_time = time.time()
 
     sess = tf.InteractiveSession()
@@ -343,7 +343,7 @@ def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,overide = False):
     lstmCell = tf.contrib.rnn.BasicLSTMCell(lstmUnits)
     lstmCell = tf.contrib.rnn.DropoutWrapper(cell=lstmCell, output_keep_prob=drop_out)
     value, _ = tf.nn.dynamic_rnn(lstmCell, batch_vec_data, dtype=tf.float32)
-    weight = tf.Variable(tf.truncated_normal([lstmUnits, numClasses]))
+    weight = tf.Variable(tf.truncated_normal([lstmUnits, numClasses]),name='WEIGHTS')
     bias = tf.Variable(tf.constant(0.1, shape=[numClasses]))
     value = tf.transpose(value, [1, 0, 2])
     last = tf.gather(value, int(value.get_shape()[0]) - 1)
@@ -351,7 +351,22 @@ def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,overide = False):
 
     correctPred = tf.equal(tf.argmax(prediction, 1), tf.argmax(labels, 1))
     accuracy = tf.reduce_mean(tf.cast(correctPred, tf.float32))
-    loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=prediction, labels=labels) +BETA*tf.nn.l2_loss(weight) + BETA*tf.nn.l2_loss(bias))
+
+
+    # l1 regularization :
+    l1_regularizer = tf.contrib.layers.l1_regularizer(
+        scale=BETA, scope=None
+    )
+    weights = tf.trainable_variables()
+    regularization_penalty_l1 = tf.contrib.layers.apply_regularization(l1_regularizer,weights) #+ tf.contrib.layers.apply_regularization(l1_regularizer, bias)
+
+    # l2 regularization
+    regularization_penalty_l2 = BETA * tf.nn.l2_loss(weight) + BETA * tf.nn.l2_loss(bias)
+    if l1 ==True:
+        regularization_penalty=regularization_penalty_l1
+    else:
+        regularization_penalty=regularization_penalty_l2
+    loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=prediction, labels=labels) +regularization_penalty)
     optimizer = tf.train.AdamOptimizer(beta1=0.9,beta2=0.999).minimize(loss)
 
 
@@ -379,7 +394,7 @@ def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,overide = False):
         batch = np.random.randint(len(train_data), size=batchSize)
         batch_data = [train_data[k] for k in batch]
         # zip(*batch_data) returns labels, sent_str_list, sent_idx_list
-        nextBatchLabels, _, nextBatchVec = zip(*batch_data)
+        id, nextBatchLabels, _, nextBatchVec = zip(*batch_data)
         sess.run(optimizer, {batch_vec_data: nextBatchVec, labels: nextBatchLabels})
         feed_dict = {batch_vec_data: nextBatchVec, labels: nextBatchLabels}
 
@@ -416,7 +431,7 @@ def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,overide = False):
     # calculate train data accuracy
     '''
 
-    nextBatchLabels, _, nextBatchVec = zip(*train_data)
+    id, nextBatchLabels, _, nextBatchVec = zip(*train_data)
     feed_dict = {batch_vec_data: nextBatchVec, labels: nextBatchLabels}
     accuracy_num, correctPred_list, prediction_list,loss_train = sess.run([accuracy, correctPred,prediction,loss],
                                           feed_dict=feed_dict)
@@ -431,7 +446,7 @@ def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,overide = False):
     Test accuracy
     '''
     # zip(*batch_data) returns labels, sent_str_list, sent_idx_list
-    nextBatchLabels, nextBatchStr, nextBatchVec = zip(*cv_data)
+    id, nextBatchLabels, nextBatchStr, nextBatchVec = zip(*cv_data)
     feed_dict =  {batch_vec_data: nextBatchVec, labels: nextBatchLabels}
     accuracy_num, correctPred_list, prediction_list,loss_cv = sess.run([accuracy, correctPred,prediction,loss],
                                           feed_dict=feed_dict)

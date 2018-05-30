@@ -101,6 +101,40 @@ def l2_vs_loss(overide=False):
         print('-success dump l2_plot_stats data-')
         return tt_acu
 
+
+# ------------------------------
+# plot loss of different L2 regulariziation term
+# ------------------------------
+def l1_vs_loss(overide=False):
+    '''
+    : input
+    '''
+    unit = 40
+    split = 40
+    if overide:
+        tt_acu = pickle.load(open("DATA/l2_loss_stats_clustered.p", "rb"))
+        print('finish load l2_plot_stats data from pickle!')
+        return tt_acu
+    else:
+        # train & test accuracy
+        tt_acu = []
+        # final_data = contextualize(None, True)
+
+        print('Begin training for ls_vs_loss!')
+        for l1_term in range(1,split+1):
+            print('epoch', l1_term)
+
+            l1_term = l1_term/unit
+            print('l2_term:',l1_term)
+
+            train_loss_,cv_loss_ = train(train_data,cv_data, beta_l2 = l1_term,l1=True)
+            tt_acu.append([l1_term,train_loss_,cv_loss_])
+        print('result of cross validation:')
+        print(tt_acu)
+        pickle.dump(tt_acu, open("DATA/l1_loss_stats_clustered.p", "wb+"))
+        print('-success dump l1_plot_stats data-')
+        return tt_acu
+
 # ------------------------------
 # plot
 # ------------------------------
@@ -125,15 +159,18 @@ if __name__ == '__main__':
     with original 12k data
     '''
     # data_file = 'sms_clean_0524.txt'
-    #
-    # vocab_str, vocab_vec = loadZhW2v(None, True)
-    # s = np.vstack(vocab_vec)
-    #
-    # Gvar = np.var(s, 0)  # distributional parameter for Glove, for later generating random embedding for UNK
-    # Gmean = np.mean(s, 0)
-    # raw_data = read_data(None, True)
-    #
-    # final_data = contextualize(raw_data=None,overide=True)
+
+    vocab_str, vocab_vec = loadZhW2v(None, True)
+    s = np.vstack(vocab_vec)
+
+    Gvar = np.var(s, 0)  # distributional parameter for Glove, for later generating random embedding for UNK
+    Gmean = np.mean(s, 0)
+    # raw_data = read_data(data_file,name = 'DATA/raw_data_w_id0530.p')
+    # #
+    # final_data = contextualize(raw_data=raw_data,name = 'DATA/final_data_w_id0530.p',vocab_str=vocab_str, vocab_vec=vocab_vec, Gmean=Gmean, Gvar=Gvar)
+    # #output: 'train_data.p',use as the original data that to compare with clustered train data.
+    # train_data, cv_data, _ = split_data(final_data, 0)
+
     # # # plot datasize_vs_loss
     # # tt_acu = datasize_vs_loss(True)
     # # plot(tt_acu,"size of dataset","PLOT/datasize_loss_stats.png")
@@ -153,22 +190,30 @@ if __name__ == '__main__':
     '''
     data_file = 'clustered_sms_message.txt'
 
-    vocab_str, vocab_vec = loadZhW2v(None, True)
-    s = np.vstack(vocab_vec)
+    # vocab_str, vocab_vec = loadZhW2v(None, True)
+    # s = np.vstack(vocab_vec)
+    #
+    # Gvar = np.var(s, 0)  # distributional parameter for Glove, for later generating random embedding for UNK
+    # Gmean = np.mean(s, 0)
 
-    Gvar = np.var(s, 0)  # distributional parameter for Glove, for later generating random embedding for UNK
-    Gmean = np.mean(s, 0)
-    raw_data = read_data(data_file)
 
-    final_data = contextualize(raw_data,vocab_str, vocab_vec, Gmean, Gvar)
+    raw_data = read_data(None,name = "DATA/raw_data_clustered.p", overide=True)
+
+    final_data = contextualize(None, name="DATA/final_data_clustered.p",overide = True)
     # plot datasize_vs_loss
     tt_acu = datasize_vs_loss()
     plot(tt_acu,"size of dataset","PLOT/datasize_loss_stats_clustered.png")
 
 
     # plot L2 regulariziation term _vs_loss
-    # when voeride = 'train', the cv_data and test data will still be the same as clean data,
+    # when overide = 'train', the cv_data and test data will still be the same as clean data,
     # but the train data would only be part of train data that also appears in clustered data.
+
+    # when the split mode is 'train', pick out data in old_train_data and clustered data at the same time.
     train_data, cv_data, _ = split_data(final_data, 0,overide='train')
-    tt_acu = l2_vs_loss()
-    plot(tt_acu,"L2 regularization term","PLOT/l2_loss_stats_clustered.png")
+    # tt_acu = l2_vs_loss()
+    # plot(tt_acu,"L2 regularization term","PLOT/l2_loss_stats_clustered.png")
+
+
+    tt_acu = l1_vs_loss()
+    plot(tt_acu, "L1 regularization term", "PLOT/l1_loss_stats_clustered.png")
