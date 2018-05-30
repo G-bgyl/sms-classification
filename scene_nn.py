@@ -363,7 +363,7 @@ def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,overide = False):
     '''
     for i in range(iterations):
 
-        if convergence > 75:
+        if convergence > 200:
             print('\nIteration %s Successfully converge!'%(i))
             break
         batch = np.random.randint(len(train_data), size=batchSize)
