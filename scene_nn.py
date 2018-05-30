@@ -281,7 +281,7 @@ def prepare_batch(batch_data):
 batchSize = 200
 lstmUnits = 64
 numClasses = 8
-iterations = 1200
+iterations = 12000
 numDimensions = 300
 
 # ----------------------------------------------------------------
@@ -394,7 +394,7 @@ def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,l1=False,overide = Fal
     for i in range(iterations):
 
 
-        if convergence > 100:
+        if convergence > 75:
 
             print('\nIteration %s Successfully converge!'%(i))
             break
@@ -432,9 +432,13 @@ def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,l1=False,overide = Fal
 
         # help made judgment of converging.
 
-        if 0< (train_accu-max_acc)/max_acc<0.00005:
+        if (train_accu-max_acc)/max_acc<0.00005:
+
             convergence += 1
-            max_acc=train_accu
+
+        else:
+            max_acc = train_accu
+            convergence = 0
 
 
     '''
