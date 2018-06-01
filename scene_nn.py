@@ -341,7 +341,7 @@ def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,overide = False):
     correctPred = tf.equal(tf.argmax(prediction, 1), tf.argmax(labels, 1))
     accuracy = tf.reduce_mean(tf.cast(correctPred, tf.float32))
     loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=prediction, labels=labels) +BETA*tf.nn.l2_loss(weight) + BETA*tf.nn.l2_loss(bias))
-    optimizer = tf.train.AdamOptimizer(beta1=0.9,beta2=0.999).minimize(loss)
+    optimizer = tf.train.AdamOptimizer(learning_rate = 0.0005).minimize(loss)
 
 
 
@@ -357,7 +357,7 @@ def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,overide = False):
     logdir = "tensorboard/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + "/"
     writer = tf.summary.FileWriter(logdir, sess.graph)
     convergence = 0
-    max_acc= 0.5
+    max_acc= 50
     '''
     # begin training
     '''
@@ -399,14 +399,14 @@ def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,overide = False):
     #         print("saved to %s" % save_path)
 
         # help made judgment of converging.
+        # if train_accu>99.99
 
-
-        if (train_accu-max_acc)/max_acc<0.00005:
-            convergence += 1
-
-        else:
-            max_acc = train_accu
-            convergence = 0
+        # if (train_accu-max_acc)/max_acc<0.00005:
+        #     convergence += 1
+        #
+        # else:
+        #     max_acc = train_accu
+        #     convergence = 0
 
     '''
     # calculate train data accuracy
