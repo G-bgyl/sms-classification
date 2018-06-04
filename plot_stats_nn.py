@@ -191,6 +191,7 @@ if __name__ == '__main__':
     '''
     use clustered data
     '''
+    print('##### use clustered data! #####')
     data_file = 'clustered_sms_message.txt'
 
     # vocab_str, vocab_vec = loadZhW2v(None, True)
