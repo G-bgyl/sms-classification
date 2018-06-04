@@ -212,7 +212,7 @@ if __name__ == '__main__':
     final_data = contextualize(None, name="DATA/final_data_clustered.p",overide = True)
     # plot datasize_vs_loss
     tt_acu = datasize_vs_loss()
-    plot(tt_acu,"size of dataset","PLOT/datasize_loss_stats_clustered.png")
+    plot(tt_acu,"size of dataset","PLOT/datasize_loss_stats_clustered_0604.png")
 
 
     # plot L2 regulariziation term _vs_loss
@@ -222,7 +222,7 @@ if __name__ == '__main__':
     # when the split mode is 'train', pick out data in old_train_data and clustered data at the same time.
     train_data, cv_data, _ = split_data(final_data, 0,overide='train')
     tt_acu = l2_vs_loss()
-    plot(tt_acu,"L2 regularization term","PLOT/l2_loss_stats_clustered.png")
+    plot(tt_acu,"L2 regularization term","PLOT/l2_loss_stats_clustered_0604 .png")
     #
     #
     # tt_acu = l1_vs_loss()
