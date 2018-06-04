@@ -28,8 +28,8 @@ def datasize_vs_loss(overide=False):
             print('train_size:',1-train_size)
             # train_size in split data means the part that need to throw away
             train_data, cv_data, _ = split_data(final_data, train_size=train_size, overide='train')
-            train_loss_, cv_loss_ = train(train_data,cv_data)
-            tt_acu.append([1-train_size, train_loss_, cv_loss_])
+            train_loss_, cv_loss_,train_f1_score,cv_f1_score = train(train_data,cv_data)
+            tt_acu.append([1-train_size, train_loss_, cv_loss_,train_f1_score,cv_f1_score])
 
         print('result of cross validation:')
         print(tt_acu)
