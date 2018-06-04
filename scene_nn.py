@@ -465,6 +465,9 @@ def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,overide = False):
     print('length of test data:',len(nextBatchVec))
     print('wrong of test data:', j)
 
+    loss_train = np.log(loss_train)
+    loss_cv = np.log(loss_cv)
+
     print('\nloss for train and cv:%s %s\n'%(loss_train,loss_cv))
 
     finish_time = time.time()
@@ -472,7 +475,7 @@ def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,overide = False):
     print("======== total spend for train:",spend_time,'minutes ========\n')
 
     sess.close()
-    return loss_train,loss_cv
+    return loss_train,loss_cv,train_f1_score,cv_f1_score
 
 if __name__=='__main__':
 
