@@ -232,18 +232,26 @@ def split_data(final_data,train_size = 0, overide = False):
 
     if overide:
         if overide =='train':
-            #  final data would be cluastered data,and what in pickle would be clean data.
+            #  final data would be cluastered data,and what in pickle would be whole clean data,must with id.
+
             train_data=[]
-            train_data_all = pickle.load(open("DATA/train_data.p", "rb"))
-            clustered_id = list(zip(*final_data))[0]
+
+            final_whole_data_ = pickle.load(open("DATA/final_data_w_id0530.p", "rb"))
+
+            train_dev, test_data = train_test_split(final_whole_data_, test_size=0.2, random_state=42)
+
+            train_data_all, cv_data = train_test_split(train_dev, test_size=0.25, random_state=42)
+            clustered_train_id = list(zip(*final_data))[0]
             for each in train_data_all:
-                if each[0] in clustered_id:
+                if each[0] in clustered_train_id:
                     train_data.append(each)
             train_data, _ = train_test_split(train_data, test_size=train_size, random_state=42)
             print('train mode -- len of train data:',len(train_data))
-            cv_data = pickle.load(open("DATA/cv_data_cp.p", "rb"))
-            test_data = pickle.load(open("DATA/test_data_cp.p", "rb"))
-            print('train mode -- finish load split data from pickle!')
+            pickle.dump(train_data, open("DATA/train_data_clus_w_id.p", "wb+"))
+            pickle.dump(cv_data, open("DATA/cv_data_w_id.p", "wb+"))
+            pickle.dump(test_data, open("DATA/test_data_w_id.p", "wb+"))
+
+            print('train mode -- finish dump split data from pickle!')
             return train_data, cv_data, test_data
         else:
             train_data = pickle.load(open("DATA/train_data.p", "rb"))
@@ -438,15 +446,16 @@ def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,l1=False,overide = Fal
             convergence +=1
         else:
             convergence = 0
+
         # help made judgment of converging.
-
-        if (train_accu-max_acc)/max_acc<0.00005:
-
-            convergence += 1
-
-        else:
-            max_acc = train_accu
-            convergence = 0
+        # old algorithm
+        # if (train_accu-max_acc)/max_acc<0.00005:
+        #
+        #     convergence += 1
+        #
+        # else:
+        #     max_acc = train_accu
+        #     convergence = 0
 
 
     '''
@@ -470,7 +479,7 @@ def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,l1=False,overide = Fal
     '''
     # because of split data in train mode, train data(up there) is with id,but cv_data is not.
     # zip(*batch_data) returns labels, sent_str_list, sent_idx_list
-    nextBatchLabels, nextBatchStr, nextBatchVec = zip(*cv_data)
+    id, nextBatchLabels, nextBatchStr, nextBatchVec = zip(*cv_data)
     feed_dict =  {batch_vec_data: nextBatchVec, labels: nextBatchLabels}
     accuracy_num, correctPred_list, prediction_list,loss_cv = sess.run([accuracy, correctPred,prediction,loss],
                                           feed_dict=feed_dict)
