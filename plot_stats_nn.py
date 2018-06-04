@@ -172,9 +172,9 @@ if __name__ == '__main__':
     raw_data = read_data(None, True)
 
     final_data = contextualize(raw_data=None,overide=True)
-    # # plot datasize_vs_loss
-    # tt_acu = datasize_vs_loss()
-    # plot(tt_acu,"size of dataset","PLOT/clean_datasize_loss_stats.png")
+    # plot datasize_vs_loss
+    tt_acu = datasize_vs_loss()
+    plot(tt_acu,"size of dataset","PLOT/clean_datasize_loss_0604.png")
 
     # # plot drop_out_vs_loss
     # train_data, cv_data, _ = split_data(final_data, 0)
@@ -184,7 +184,7 @@ if __name__ == '__main__':
     # plot L2 regulariziation term _vs_loss
     train_data, cv_data, _ = split_data(final_data, 0)
     tt_acu = l2_vs_loss()
-    plot(tt_acu,"L2 regularization term","PLOT/l2_loss_stats.png")
+    plot(tt_acu,"L2 regularization term","PLOT/l2_loss_stats_0604.png")
 
     '''
     use clustered data
