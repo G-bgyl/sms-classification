@@ -59,7 +59,8 @@ def drop_out_vs_loss(overide=False):
 
             drop_out = drop_out/unit
             print('drop out:',1-drop_out)
-
+            print('len of train data:',len(train_data))
+            print('len of cv data:', len(cv_data))
             train_loss_,cv_loss_ = train(train_data,cv_data, drop_out = drop_out)
             tt_acu.append([1-drop_out,train_loss_,cv_loss_])
         print('result of cross validation:')
@@ -77,7 +78,7 @@ def l2_vs_loss(overide=False):
     '''
 
     unit = 20
-    split = 50
+    split = 100
     if overide:
         tt_acu = pickle.load(open("DATA/l2_loss_stats_0526.p", "rb"))
         print('finish load l2_plot_stats data from pickle!')
@@ -87,12 +88,12 @@ def l2_vs_loss(overide=False):
         tt_acu = []
         # final_data = contextualize(None, True)
 
-        print('Begin training for ls_vs_loss!')
-        for l2_term in range(1,split+1):
+        print('Begin training for l2_vs_loss!')
+        for l2_term in range(1,int(split/2+1)):
             print('epoch', l2_term)
 
-            # l2_term = l2_term/unit
-            l2_term=np.log(l2_term)
+            l2_term = l2_term/unit
+            l2_term=np.log(l2_term+1)
             print('l2_term:',l2_term)
 
             train_loss_,cv_loss_ = train(train_data,cv_data, beta_l2 = l2_term)
@@ -122,7 +123,7 @@ def l1_vs_loss(overide=False):
         tt_acu = []
         # final_data = contextualize(None, True)
 
-        print('Begin training for ls_vs_loss!')
+        print('Begin training for l1_vs_loss!')
         for l1_term in range(1,split+1):
             print('epoch', l1_term)
 

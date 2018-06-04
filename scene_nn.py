@@ -358,12 +358,13 @@ def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,overide = False):
     writer = tf.summary.FileWriter(logdir, sess.graph)
     convergence = 0
     max_acc= 50
+    record_mx=list(np.random.random_sample((50,)))
     '''
     # begin training
     '''
     for i in range(iterations):
 
-        if convergence > 200:
+        if convergence > 300:
             print('\nIteration %s Successfully converge!'%(i))
             break
         batch = np.random.randint(len(train_data), size=batchSize)
@@ -397,7 +398,15 @@ def train(train_data,cv_data,drop_out=0.75,beta_l2 = 0.01,overide = False):
     #         save_path = saver.save(sess, "models/"+"_pretrained_lstm.ckpt", global_step=i)
     # # datetime.datetime.now().strftime("%Y%m%d-%H:%M")+
     #         print("saved to %s" % save_path)
-
+        # copy the old max number
+        max_old=  [max(record_mx)].copy()[0]
+        record_mx.pop(0)
+        record_mx.append(train_accu)
+        if max_old == max(record_mx):
+            # record_mx[record_mx.index(min(record_mx))]=train_accu
+            convergence +=1
+        else:
+            convergence = 0
         # help made judgment of converging.
         # if train_accu>99.99
 
