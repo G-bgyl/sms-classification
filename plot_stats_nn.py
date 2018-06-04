@@ -78,7 +78,7 @@ def l2_vs_loss(overide=False):
     '''
 
     unit = 20
-    split = 100
+
     if overide:
         tt_acu = pickle.load(open("DATA/l2_loss_stats_0526.p", "rb"))
         print('finish load l2_plot_stats data from pickle!')
@@ -89,11 +89,11 @@ def l2_vs_loss(overide=False):
         # final_data = contextualize(None, True)
 
         print('Begin training for l2_vs_loss!')
-        for l2_term in range(1,int(split/2+1)):
+        for l2_term in range(unit+1):
             print('epoch', l2_term)
 
             l2_term = l2_term/unit
-            l2_term=np.log(l2_term+1)
+            # l2_term=np.log(l2_term+1)
             print('l2_term:',l2_term)
 
             train_loss_,cv_loss_ = train(train_data,cv_data, beta_l2 = l2_term)
